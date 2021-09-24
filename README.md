@@ -14,6 +14,44 @@ A [short extract of the original text](https://github.com/revaldinho/miczo-sim/b
 
 Both PDF and original BASIC source code in ASCII format are provided in the [src-orig/](https://github.com/revaldinho/miczo-sim/blob/main/src-orig) directory.
 
-Alternative src-xyz/ directories are intended for extended versions, and possibly versions customized for specific BASIC dialects and micro-computer hosts.
+The src-generic/ directory contains a modified version of the program which has so far been tested on
+
+ * Locomotive (CPC) BASIC
+ * Brandy BASIC
+ * Chipmunk BASIC
+
+The main changes compared with the original for BASIC compatibility are
+
+ * explicit declaration of all arrays
+ * revision of the DATA statements to use all numeric values including 0 or -1 fields for end-of-data or invalid entries (see updated DATA description below)
+ * replacement of comments starting with an apostrophe by full REM keywords and preceding statement separating colons where necessary
+ * addition of explicit GOTO keyword in ELSE <line_no> redirections
+
+## Functional Changes
+
+As well as the minor language tweaks, the code is modified to store logic values in a single byte rather than the original two byte format. This reduces the amount of space needed for storage of the logic values both in the main array and the event queue. More importantly though, the BASIC statements for manipulating the logic values are now simplified to use BASIC bit-wise operations, and there is actually a small run time speed improvement. 
+
+The new logic encoding is
+
+ * 0 = ‘0’ = Logic zero
+ * 1 = ‘Z’ = Tristate (high impedance)
+ * 2 = ‘X’ = Unknown
+ * 3 = ‘1’ = Logic one
+
+Of the BASICs tested, all are able to do the bit-wise AND and OR operations.  However not all BASICs perform the same bit-wise NOT operation. CPC BASIC for example will happily compute &55 as NOT &AA. However, chipmunk BASIC computes &00  as NOT &55, and indeed this is the same result given for a NOT operation on any non-zero number.  The NOT operation instead has to be computed arithmetically as (&03 - value), and then any &01 (‘Z’) results are corrected to &02 (‘X’).
+
+## DATA Statements
+
+The original DATA statements are described in the PDF of the Logic Simulation chapter. The differences introduced by the new code are as follows.
+
+### Netlist description
+
+All unused input fields for logic and fanout gate entries should be filled with 0s explicitly
+
+### Stimulus description
+
+The End of Field token is changed from the string “*” to numeric -1
+
+
 
 [1] Digital Logic Testing and Simulation, Alexander Miczo, Harper Collins, New York 1986
